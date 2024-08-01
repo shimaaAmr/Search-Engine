@@ -1,0 +1,91 @@
+import requests  #call links
+import bs4
+import html2text
+import os
+import logging
+import time
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(name)
+
+# The start page
+the_links = ['https://gate.ahram.org.eg/', 'https://english.ahram.org.eg/']
+
+# Initialize variables
+the_count = 0  # Page number to scrape
+count = 1      # Link count
+NOF = 0        # File number
+
+# Main loop to scrape pages and collect links
+while len(the_links) < 10000:
+    logger.info('####################### New page ################################# %s', the_count)
+    
+    # Get the page content with retries
+    retries = 3
+    while retries > 0:
+        try:
+            res = requests.get(the_links[the_count], timeout=30)  # Increased timeout to 30 seconds
+            res.raise_for_status()  # Raise exception for non-200 status codes
+            break  # Break out of retry loop if request succeeds
+        except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
+            retries -= 1
+            logger.error("Error occurred while fetching URL: %s", e)
+            time.sleep(5)  # Add a delay before retrying
+    
+    if retries == 0:
+        logger.warning("Max retries reached. Skipping URL: %s", the_links[the_count])
+        the_count += 1
+        continue
+    
+    the_count += 1
+    
+    # Parse the page content
+    soup = bs4.BeautifulSoup(res.text, 'lxml')
+    
+    # Find all links on the page
+    for link in soup.find_all('a', href=True):
+        if str(link['href']).startswith('https://') and str(link['href']) not in the_links and count < 10000:
+            logger.info('<<<<<<<<<<<<<<<<link number>>>>>>>>>> %s', count)
+            the_links.append(link['href'])
+            logger.info(link['href'])
+            count += 1
+
+# Ensure the directory exists
+folder_path = 'files_of_search_engine_project'
+if not os.path.exists(folder_path):
+    os.makedirs(folder_path)
+
+# Loop through collected links and save their content into files
+for link in the_links:
+    # Get the page content with retries
+    retries = 3
+    while retries > 0:
+        try:
+            res2 = requests.get(link, timeout=30)  # Increased timeout to 30 seconds
+            res2.raise_for_status()  # Raise exception for non-200 status codes
+            break  # Break out of retry loop if request succeeds
+        except (requests.exceptions.RequestException, requests.exceptions.HTTPError) as e:
+            retries -= 1
+            logger.error("Error occurred while fetching URL: %s", e)
+            time.sleep(5)  # Add a delay before retrying
+    
+    if retries == 0:
+        logger.warning("Max retries reached. Skipping URL: %s", link)
+        continue
+    
+    soup2 = bs4.BeautifulSoup(res2.text, 'lxml')
+    
+    # Convert HTML content to plain text
+    output = html2text.html2text(soup2.text)
+    
+    # Write text content to a file
+    file_path = os.path.join(folder_path, 'file{}.txt'.format(NOF))
+    try:
+        with open(file_path, 'w', encoding="utf-8") as file:
+            file.write(output)
+        logger.info("Saved content from URL: %s", link)
+    except Exception as e:
+        logger.error("An error occurred while writing the file: %s", e)
+    
+    NOF += 1

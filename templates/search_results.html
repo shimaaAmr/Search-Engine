@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='result.css') }}">
+</head>
+<body>
+    <div class="main">
+               <div class="column">
+            <ul>
+                <h2>Inverted Index Search Results</h2>
+                {% if inverted_index_results %}
+                    {% for result in inverted_index_results %}
+                        <li><a href="{{ result }}">{{ result }}</a></li>
+                    {% endfor %}
+                {% else %}
+                    <li>No results found.</li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="column">
+            <ul>
+                <h2>Page Rank Search Results</h2>
+                {% if page_rank_results %}
+                    {% for result in page_rank_results %}
+                        <li><a href="{{ result }}">{{ result }}</a></li>
+                    {% endfor %}
+                {% else %}
+                    <li>No results found.</li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="column">
+            <ul>
+                <h2>TF-IDF Search Results</h2>
+                {% if tfidf_results %}
+                    {% for result in tfidf_results %}
+                        <li><a href="{{ result }}">{{ result }}</a></li>
+                    {% endfor %}
+                {% else %}
+                    <li>No results found.</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="wrapper">
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+</body>
+</html>
